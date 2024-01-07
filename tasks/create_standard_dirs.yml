@@ -1,0 +1,16 @@
+- name: Check if username_on_the_host is root, if yes then exit
+  ansible.builtin.fail: msg="Exiting, need to be non-root for this to work. Try run without sudo"
+  when: username_on_the_host.stdout == "root"
+
+- name: Create standard directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ username_on_the_host.stdout }}"
+    group: "{{ username_on_the_host.stdout }}"
+    mode: 0775
+  loop:
+    - /home/{{ username_on_the_host.stdout }}/Documents/projects
+    - /home/{{ username_on_the_host.stdout }}/Documents/software
+    - /home/{{ username_on_the_host.stdout }}/Documents/packages
+

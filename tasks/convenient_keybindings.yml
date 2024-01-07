@@ -1,0 +1,54 @@
+# Remove default terminal keybinding
+- name: Remove default terminal keybinding 
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/terminal"
+    value: "['']"
+
+# Setup terminator keybinding
+- name: Setup terminator shortcut - name
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/name"
+    value: "'Launch terminator'"
+
+- name: Setup terminator shortcut - command
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/command"
+    value: "'terminator'"
+
+- name: Setup terminator shortcut - binding
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/binding"
+    value: "'<Primary><Alt>t'"
+
+
+# Setup flameshot keybinding
+- name: Setup flameshot shortcut - name
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/name"
+    value: "'Launch flameshot'"
+
+- name: Setup flameshot shortcut - command
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/command"
+    value: "'flameshot gui'"
+
+- name: Setup flameshot shortcut - binding
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/binding"
+    value: "'<Primary><Shift>d'"
+
+
+
+# All of your custom shortcuts must also be added to an array.
+- name: Enable custom keybindings
+  become: false 
+  community.general.dconf:
+    key: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
+    value: "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/']"

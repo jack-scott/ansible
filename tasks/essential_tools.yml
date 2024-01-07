@@ -1,0 +1,50 @@
+- name: Install essential packages
+  apt: name={{item}}
+  with_items:
+    - git
+    - htop
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+    - python3-pip
+    - virtualenv
+    - python3-setuptools
+    - openssh-server
+    - openssh-client
+
+- name: Generate an ssh keypair
+  become: false
+  community.crypto.openssh_keypair:
+    path: /home/{{ username_on_the_host.stdout }}/.ssh/id_ed25519
+    type: ed25519
+
+- name: Add block to bashrc to start ssh-agent if it isn't already
+  blockinfile:
+    path: /home/{{ username_on_the_host.stdout }}/.bashrc
+    marker: "# {mark} ANSIBLE MANAGED BLOCK ssh-agent"
+    block: |
+      SSH_ENV="$HOME/.ssh/agent-environment"
+
+      function start_agent {
+          echo "Initialising new SSH agent..."
+          /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+          echo succeeded
+          chmod 600 "${SSH_ENV}"
+          . "${SSH_ENV}" > /dev/null
+          /usr/bin/ssh-add;
+      }
+
+      # Source SSH settings, if applicable
+
+      if [ -f "${SSH_ENV}" ]; then
+          . "${SSH_ENV}" > /dev/null
+          #ps ${SSH_AGENT_PID} doesn't work under cywgin
+          ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+              start_agent;
+          }
+      else
+          start_agent;
+      fi
+    state: present
+    create: true

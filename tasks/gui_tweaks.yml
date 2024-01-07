@@ -1,0 +1,75 @@
+- name: Install required packages
+  apt: name={{item}}
+  with_items:
+    - gnome-tweaks
+    - gir1.2-gtop-2.0
+    - gir1.2-nm-1.0
+    - gir1.2-clutter-1.0
+    - gnome-system-monitor
+    - gnome-shell-extension-prefs
+
+- name: automatic timezone
+  become: false   # VERY IMPORTANT
+  community.general.dconf:
+    key: "/org/gnome/desktop/datetime/automatic-timezone"
+    value: "true"
+
+- name: clock show date
+  become: false
+  community.general.dconf:
+    key: "/org/gnome/desktop/interface/clock-show-date"
+    value: "true"
+
+- name: clock format
+  become: false
+  community.general.dconf:
+    key: "/org/gnome/desktop/interface/clock-format"
+    value: "'12h'"
+
+# Note this this is a PIA to get installed on Ubuntu 22.04, its semi unsupported
+# I have made it work as below but this will likely not transfer well to other Ubuntu
+# versions so solve that one to make it portable if you would like.
+# Here are some clues
+# - This should work for Ubuntu-18 https://github.com/paradoxxxzero/gnome-shell-system-monitor-applet
+# - This is where i got the download link for 22.04. You have to find your gnome-shell --version first https://extensions.gnome.org/extension/3010/system-monitor-next/
+# - Here's the info for installing a manually downloaded gnome-extension. TLDR, unzip and rename the folder to be the same as the UUID in the manifest https://www.debugpoint.com/manual-installation-gnome-extension/
+
+- name: Download system monitor extension
+  become: false
+  ansible.builtin.get_url:
+    dest: /tmp
+    url: https://extensions.gnome.org/extension-data/system-monitor-nextparadoxxx.zero.gmail.com.v39.shell-extension.zip
+
+- name: Ensure extensions directory exists
+  become: false
+  file:
+    path: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/
+    state: directory
+
+- name: Move extension correct location
+  become: false
+  ansible.builtin.copy:
+    src: /tmp/system-monitor-nextparadoxxx.zero.gmail.com.v39.shell-extension.zip
+    dest: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/system-monitor-nextparadoxxx.zero.gmail.com.v39.shell-extension.zip
+  register: added_gnome_extension
+
+- name: Ensure extract system monitor directory exists
+  become: false
+  file:
+    path: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/system-monitor-next@paradoxxx.zero.gmail.com
+    state: directory
+
+- name: Extract system monitor
+  become: false
+  ansible.builtin.unarchive:
+    src: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/system-monitor-nextparadoxxx.zero.gmail.com.v39.shell-extension.zip
+    dest: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/system-monitor-next@paradoxxx.zero.gmail.com
+
+
+- name: Need logout/login cycle
+  ansible.builtin.fail: msg="We need to logout and then login now to make the extension take effect. Logout and then login and then run again"
+  when: (added_gnome_extension.changed == True) 
+
+- name: Enable system monitor extension
+  become: false 
+  ansible.builtin.command: gnome-extensions enable system-monitor-next@paradoxxx.zero.gmail.com
