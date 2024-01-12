@@ -12,6 +12,7 @@
     - python3-setuptools
     - openssh-server
     - openssh-client
+    - net-tools
 
 - name: Generate an ssh keypair
   become: false

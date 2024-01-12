@@ -66,6 +66,9 @@
     dest: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/system-monitor-next@paradoxxx.zero.gmail.com
 
 
+# TODO: Add tactile extension https://extensions.gnome.org/extension-data/tactilelundal.io.v27.shell-extension.zip
+
+
 - name: Need logout/login cycle
   ansible.builtin.fail: msg="We need to logout and then login now to make the extension take effect. Logout and then login and then run again"
   when: (added_gnome_extension.changed == True) 
