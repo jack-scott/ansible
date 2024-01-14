@@ -13,6 +13,7 @@
     - openssh-server
     - openssh-client
     - net-tools
+    - libfuse2
 
 - name: Generate an ssh keypair
   become: false
