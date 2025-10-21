@@ -1,20 +1,6 @@
 # ansible
 Ansible play book for personal PC setup
 
-
-## Pre-steps (pipx)
-Install pipx
-```
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
-sudo apt install python3.10-venv
-```
-
-Install ansible
-```
-pipx install --include-deps ansible
-```
-
 ## Pre-steps (pip)
 Check if you have pip
 ```
