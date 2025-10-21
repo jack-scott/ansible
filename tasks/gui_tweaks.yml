@@ -66,13 +66,68 @@
     dest: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/system-monitor-next@paradoxxx.zero.gmail.com
 
 
-# TODO: Add tactile extension https://extensions.gnome.org/extension-data/tactilelundal.io.v27.shell-extension.zip
+- name: Download tactile extension
+  become: false
+  ansible.builtin.get_url:
+    dest: /tmp
+    url: https://extensions.gnome.org/extension-data/tactilelundal.io.v27.shell-extension.zip
 
+- name: Move tactile extension to correct location
+  become: false
+  ansible.builtin.copy:
+    src: /tmp/tactilelundal.io.v27.shell-extension.zip
+    dest: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/tactilelundal.io.v27.shell-extension.zip
+  register: added_tactile_extension
 
-- name: Need logout/login cycle
-  ansible.builtin.fail: msg="We need to logout and then login now to make the extension take effect. Logout and then login and then run again"
-  when: (added_gnome_extension.changed == True) 
+- name: Ensure extract tactile directory exists
+  become: false
+  file:
+    path: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/tactile@lundal.io
+    state: directory
+
+- name: Extract tactile extension
+  become: false
+  ansible.builtin.unarchive:
+    src: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/tactilelundal.io.v27.shell-extension.zip
+    dest: /home/{{ username_on_the_host.stdout }}/.local/share/gnome-shell/extensions/tactile@lundal.io
+
+- name: Create helper script to reload GNOME shell
+  become: false
+  copy:
+    content: |
+      #!/bin/bash
+      echo "Reloading GNOME Shell..."
+      echo "If you're on X11, this will restart GNOME Shell."
+      echo "If you're on Wayland, you'll need to log out and log back in."
+      if [ "$XDG_SESSION_TYPE" = "x11" ]; then
+        killall -3 gnome-shell
+        echo "GNOME Shell restarted!"
+      else
+        echo "You're on Wayland. Please log out and log back in."
+      fi
+    dest: /tmp/reload-gnome-shell.sh
+    mode: '0755'
+  when: added_gnome_extension.changed == True or added_tactile_extension.changed == True
+
+- name: Notify user about GNOME extension installation
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "WARNING: GNOME extension(s) have been installed."
+      - "To activate the extensions, you need to reload GNOME Shell:"
+      - ""
+      - "  X11 users: Press Alt+F2, type 'r', and press Enter"
+      - "  OR run: /tmp/reload-gnome-shell.sh"
+      - ""
+      - "  Wayland users: Log out and log back in"
+      - "  To re-run just this section run: ansible-playbook local.yml -K --tags gui"
+      - "=========================================="
+  when: added_gnome_extension.changed == True or added_tactile_extension.changed == True
 
 - name: Enable system monitor extension
-  become: false 
+  become: false
   ansible.builtin.command: gnome-extensions enable system-monitor-next@paradoxxx.zero.gmail.com
+
+- name: Enable tactile extension
+  become: false
+  ansible.builtin.command: gnome-extensions enable tactile@lundal.io

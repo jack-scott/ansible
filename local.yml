@@ -21,15 +21,23 @@
       become: false
       local_action: command whoami
       register: username_on_the_host
+      tags: always
 
     - debug: var=username_on_the_host
+      tags: always
 
 
-    - include_tasks: tasks/essential_tools.yml
-    - include_tasks: tasks/convenient_tools.yml
-    - include_tasks: tasks/convenient_keybindings.yml
-    - include_tasks: tasks/docker.yml
-    - include_tasks: tasks/create_standard_dirs.yml
-    - include_tasks: tasks/gui_tweaks.yml
+    - import_tasks: tasks/essential_tools.yml
+      tags: essential
+    - import_tasks: tasks/convenient_tools.yml
+      tags: convenient
+    - import_tasks: tasks/convenient_keybindings.yml
+      tags: keybindings
+    - import_tasks: tasks/docker.yml
+      tags: docker
+    - import_tasks: tasks/create_standard_dirs.yml
+      tags: dirs
+    - import_tasks: tasks/gui_tweaks.yml
+      tags: gui
 
 

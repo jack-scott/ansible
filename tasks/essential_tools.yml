@@ -3,6 +3,7 @@
   with_items:
     - git
     - htop
+    - btop
     - apt-transport-https
     - ca-certificates
     - curl
@@ -15,11 +16,16 @@
     - net-tools
     - libfuse2
 
+- name: Check if SSH key already exists
+  become: false
+  stat:
+    path: /home/{{ username_on_the_host.stdout }}/.ssh/id_ed25519
+  register: ssh_key_stat
+
 - name: Generate an ssh keypair
   become: false
-  community.crypto.openssh_keypair:
-    path: /home/{{ username_on_the_host.stdout }}/.ssh/id_ed25519
-    type: ed25519
+  command: ssh-keygen -t ed25519 -f /home/{{ username_on_the_host.stdout }}/.ssh/id_ed25519 -N ""
+  when: not ssh_key_stat.stat.exists
 
 - name: Add block to bashrc to start ssh-agent if it isn't already
   blockinfile:

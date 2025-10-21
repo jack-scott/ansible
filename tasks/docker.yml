@@ -43,10 +43,37 @@
     append: yes
   register: add_user_result
 
-- name: Reboot after adding user to group first time
-  ansible.builtin.fail: msg="We need to reboot now to make the group take effect. Reboot and then run again"
-  when: (add_user_result.changed == True) 
+- name: Verify user is in docker group
+  become: false
+  command: groups {{ username_on_the_host.stdout }}
+  register: user_groups
+  changed_when: false
 
-- name: Reset ssh connection to allow user changes to affect ansible user # Doesn't work for local connection
-  ansible.builtin.meta:
-    reset_connection
+- name: Check docker group membership
+  ansible.builtin.debug:
+    msg: "User groups: {{ user_groups.stdout }}"
+
+- name: Create helper script to activate docker group
+  become: false
+  copy:
+    content: |
+      #!/bin/bash
+      echo "Activating docker group membership..."
+      exec newgrp docker
+    dest: /tmp/activate-docker-group.sh
+    mode: '0755'
+  when: add_user_result.changed == True
+
+- name: Notify user about group change
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "WARNING: User {{ username_on_the_host.stdout }} has been added to the docker group."
+      - "To use docker without sudo, run this command now:"
+      - ""
+      - "    newgrp docker"
+      - ""
+      - "Or run the helper script: source /tmp/activate-docker-group.sh"
+      - "Or alternatively: log out/in or reboot"
+      - "=========================================="
+  when: add_user_result.changed == True

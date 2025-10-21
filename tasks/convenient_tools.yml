@@ -6,10 +6,48 @@
     - flameshot
     - chromium-browser
 
-- name: Install convenient packages - snap
-  snap: name={{item}}
-  with_items:
-    - code
+- name: Add AppImageLauncher PPA repository
+  apt_repository:
+    repo: ppa:appimagelauncher-team/stable
+    state: present
+    update_cache: yes
+
+- name: Install AppImageLauncher
+  apt:
+    name: appimagelauncher
+    state: present
+
+- name: Check if Cursor is already installed
+  become: false
+  command: which cursor
+  register: cursor_installed
+  failed_when: false
+  changed_when: false
+
+- name: Download Cursor .deb package
+  become: false
+  get_url:
+    url: https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/1.7
+    dest: /tmp/cursor.deb
+    mode: '0644'
+  when: cursor_installed.rc != 0
+
+- name: Install Cursor from .deb package
+  apt:
+    deb: /tmp/cursor.deb
+  when: cursor_installed.rc != 0
+
+- name: Check if Claude is already installed
+  become: false
+  command: which claude
+  register: claude_installed
+  failed_when: false
+  changed_when: false
+
+- name: Install Claude Desktop
+  become: false
+  shell: curl -fsSL https://claude.ai/install.sh | bash
+  when: claude_installed.rc != 0
 
 - name: Clone magicmonty git bash prompt
   ansible.builtin.git:
@@ -33,9 +71,5 @@
     state: present
     create: true
 
-
-#TODO
-# set terminator configuration file
-# vscode settings install
 
 

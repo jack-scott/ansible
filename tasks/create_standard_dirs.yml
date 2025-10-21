@@ -11,6 +11,5 @@
     mode: 0775
   loop:
     - /home/{{ username_on_the_host.stdout }}/Documents/projects
-    - /home/{{ username_on_the_host.stdout }}/Documents/software
-    - /home/{{ username_on_the_host.stdout }}/Documents/packages
+    - /home/{{ username_on_the_host.stdout }}/Documents/upstream
 
