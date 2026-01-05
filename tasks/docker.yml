@@ -17,10 +17,6 @@
     - docker-buildx-plugin
     - docker-compose-plugin
 
-- name: Install Docker Module for Python
-  pip:
-    name: docker
-
 - name: check docker is active
   service:
     name: docker

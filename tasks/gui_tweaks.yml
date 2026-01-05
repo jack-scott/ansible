@@ -26,6 +26,7 @@
     key: "/org/gnome/desktop/interface/clock-format"
     value: "'12h'"
 
+# This is tested and confirmed working for Ubuntu 22.04 and Ubuntu 24.04
 # Note this this is a PIA to get installed on Ubuntu 22.04, its semi unsupported
 # I have made it work as below but this will likely not transfer well to other Ubuntu
 # versions so solve that one to make it portable if you would like.

@@ -11,11 +11,13 @@
     repo: ppa:appimagelauncher-team/stable
     state: present
     update_cache: yes
+  ignore_errors: yes
 
 - name: Install AppImageLauncher
   apt:
     name: appimagelauncher
     state: present
+  ignore_errors: yes
 
 - name: Check if Cursor is already installed
   become: false
